@@ -23,20 +23,20 @@ import mlflow
 ######################################################
 # Consumir una ejecucion
 ######################################################
-#model_run = 'd99ebf4ede5d4a4bb152fc8a5bc80294/Lasso'
+#model_run = 'a14a167aabbe44629bb7487df491ba2a/Lasso'
 #model = mlflow.pyfunc.load_model(model_uri=f"runs:/{model_run}")
 
 ######################################################
 # Consumir una version de un modelo
 ######################################################
-#model_name = "PrediccionCalidadVino"
+#model_name = "ModeloPuntuacionVinos"
 #model_version = 1
 #model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_version}")
 
 ######################################################
 # Consumir un modelo en una etapa
 ######################################################
-model_name = "PrediccionCalidadVino"
+model_name = "ModeloPuntuacionVinos"
 #model_stage = "Staging"
 model_stage = "Production"
 model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_stage}")

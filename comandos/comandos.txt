@@ -8,4 +8,4 @@ MLFlow
         conda env list
         conda activate mlflow_env
         export MLFLOW_TRACKING_URI='http://127.0.0.1:8990'
-        mlflow models serve --model-uri models:/PrediccionCalidadVino/Production -p5001 -h0.0.0.0 --no-conda
+        mlflow models serve --model-uri models:/ModeloPuntuacionVinos/Production -p5001 -h0.0.0.0 --no-conda

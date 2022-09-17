@@ -5,6 +5,8 @@ from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
+from mlflow.models.signature import infer_signature
+
 import shap
 import matplotlib.pyplot as plt
 
@@ -24,6 +26,8 @@ y_train = df_train[['quality']]
 
 x_test = df_test.drop('quality', inplace=False, axis=1)
 y_test = df_test[['quality']]
+
+signature = infer_signature(x_test, y_test)
 
 import mlflow
 
@@ -76,7 +80,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     # Registro del modelo
     ########################################################
-    mlflow.sklearn.log_model(model, "Regression tree")
+    mlflow.sklearn.log_model(model, "Regression tree", signature=signature)
 
     ########################################################
     # Registro de artefactos: archivo fuente
