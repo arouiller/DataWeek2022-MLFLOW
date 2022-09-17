@@ -35,5 +35,8 @@ metricas = {
 
 print(metricas)
 
-
+# 'MAE' : 0.625
+# 'MSE' : 0.583
+# 'RMSE': 0.763
+# 'MAPE': 0.115
 

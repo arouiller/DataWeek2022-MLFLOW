@@ -1,0 +1,11 @@
+MLFlow
+    levantar servidor
+        conda env list
+        conda activate mlflow_env
+        /home/arouiller/anaconda3/envs/mlflow_env/bin/python /home/arouiller/anaconda3/envs/mlflow_env/bin/mlflow server -p8990 --serve-artifacts --backend-store-uri sqlite:///mlflow.db -h0.0.0.0
+
+    servir un modelo
+        conda env list
+        conda activate mlflow_env
+        export MLFLOW_TRACKING_URI='http://127.0.0.1:8990'
+        mlflow models serve --model-uri models:/PrediccionCalidadVino/Production -p5001 -h0.0.0.0 --no-conda

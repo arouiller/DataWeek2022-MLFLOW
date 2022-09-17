@@ -2,7 +2,7 @@ import pandas as pd
 import sys
 import getopt
 import joblib
-
+import os
 
 def predict():
     full_cmd_arguments = sys.argv
@@ -56,9 +56,9 @@ def predict():
 
     x_test = pd.DataFrame([dict])
 
-    model = joblib.load('./modelos/CalificacionVinos.pkl')
+    fullpath = os.path.dirname(os.path.realpath(__file__)) + '/modelos/'
 
-    print(type(model))
+    model = joblib.load(fullpath + '/CalificacionVinos.pkl')
 
     return (model.predict(x_test))
 

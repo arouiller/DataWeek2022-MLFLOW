@@ -1,30 +1,26 @@
-import os
-
-os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
-os.environ["MLFLOW_EXPERIMENT_NAME"] = "PrediccionCalidadVinos"
-os.environ["GIT_PYTHON_REFRESH"] = "quiet"
-
-from sklearn.datasets import load_wine
-from sklearn.linear_model import Ridge, Lasso
+from sklearn.linear_model import Lasso
 import pandas as pd
+import joblib
+import os
 
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
-df_test = pd.read_csv('./data/winequality-red_test.csv', sep = ',')  
+fullpath = os.path.dirname(__file__) + '/../data/'
+storing_path = os.path.dirname(__file__) + '/modelos/'
+
+df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
+df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
+
+x_train = df_train.drop('quality', inplace=False, axis=1)
+y_train = df_train[['quality']]
 
 x_test = df_test.drop('quality', inplace=False, axis=1)
 y_test = df_test[['quality']]
 
-import mlflow.pyfunc
-
-model_name = "PrediccionCalidadVino"
-model_version = 1
-
-model = mlflow.pyfunc.load_model(
-    model_uri=f"models:/{model_name}/{model_version}"
-)
+alpha = 0.09
+model = Lasso(alpha=alpha).fit(x_train,y_train)
 
 y_tmp = y_test.copy()
 
@@ -33,7 +29,7 @@ y_tmp.drop('predicted', inplace=False, axis=1)
 y_tmp['index'] = range(1, len(y_tmp) + 1)
 
 y_tmp.columns = ['Real', 'Predicho', 'Index']
-    
+
 metricas = {
     'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),
     'MSE': mse(y_tmp[['Real']], y_tmp[['Predicho']]),
@@ -41,7 +37,6 @@ metricas = {
     'MAPE': mape(y_tmp[['Real']], y_tmp[['Predicho']]),
 }
 
-print(metricas)
-
+joblib.dump(model, storing_path + '/CalificacionVinos.pkl')
 
 

@@ -11,8 +11,13 @@ os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
 os.environ["MLFLOW_EXPERIMENT_NAME"] = "PrediccionCalidadVinos"
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
-df_train = pd.read_csv('./data/winequality-red_train.csv', sep = ',')  
-df_test = pd.read_csv('./data/winequality-red_test.csv', sep = ',')  
+fullpath = os.path.dirname(__file__) + '/../data/'
+
+df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
+df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
+
+df_train['new_column'] = df_train['fixed acidity']/df_train['volatile acidity']
+df_test['new_column'] = df_test['fixed acidity']/df_test['volatile acidity']
 
 x_train = df_train.drop('quality', inplace=False, axis=1)
 y_train = df_train[['quality']]
@@ -27,15 +32,15 @@ try:
 except Exception as e:
     exp_id = mlflow.create_experiment(os.environ["MLFLOW_EXPERIMENT_NAME"])
     
-#Set parameters
-alpha = 0.09
-#Set run name
-run_name = 'Ordinary Least Squares'
+#Parametros
+alpha = 0.1
+#Nombre de la ejecucion
+run_name = 'Regresion Lasso - Primera prueba'
+#Descripcion
+description = """
+"""
 
-#Set description (Markdown format) #https://google.github.io/styleguide/docguide/style.html#lists
-description = ""
-
-with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description):
+with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description) as run:
     model = Lasso(alpha=alpha).fit(x_train,y_train)
 
     y_tmp = y_test.copy()
@@ -45,8 +50,6 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     y_tmp['index'] = range(1, len(y_tmp) + 1)
 
     y_tmp.columns = ['Real', 'Predicho', 'Index']
-
-    mlflow.log_params({'alpha': alpha})
         
     metricas = {
         'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),
@@ -54,12 +57,19 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
         'RMSE': mse(y_tmp[['Real']], y_tmp[['Predicho']], squared=False),
         'MAPE': mape(y_tmp[['Real']], y_tmp[['Predicho']]),
     }
-
-    mlflow.log_metrics(metricas)
-    mlflow.sklearn.log_model(model, "Ordinary Least Squares")
-
     print(metricas)
+    
+    ########################################################
+    # Registro de parametros
+    ########################################################
+    mlflow.log_params({'alpha': alpha})
 
+    ########################################################
+    # Registro de métricas
+    ########################################################
+    mlflow.log_metrics(metricas)
 
-
-
+    ########################################################
+    # Registro del modelo
+    ########################################################
+    mlflow.sklearn.log_model(model, "Lasso")
