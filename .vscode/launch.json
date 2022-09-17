@@ -1,0 +1,30 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            //"console": "integratedTerminal",
+            //"justMyCode": true,
+
+            "args": [
+                "--fixed_acidity=6.7",
+                "--volatile_acidity=0.855",
+                "--citric_acid=0.02",
+                "--residual_sugar=1.9",
+                "--chlorides=0.064",
+                "--free_sulfur_dioxide=29",
+                "--total_sulfur_dioxide=38",
+                "--density=0.99472",
+                "--ph=3.3",
+                "--sulphates=0.56",
+                "--alcohol=10.75"
+              ]
+        }
+    ]
+}
