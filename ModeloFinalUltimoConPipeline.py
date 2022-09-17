@@ -1,5 +1,7 @@
 from sklearn.linear_model import Ridge, Lasso
 import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
 
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
@@ -35,8 +37,20 @@ run_name = 'Ordinary Least Squares'
 #Set description (Markdown format) #https://google.github.io/styleguide/docguide/style.html#lists
 description = ""
 
+def new_column(x, column1, column2, column_name):
+    x[column_name] = x[column1]/ x[column2]
+    return x
+
 with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description):
-    model = Lasso(alpha=alpha).fit(x_train,y_train)
+
+    steps = [
+        ('new_column', FunctionTransformer(new_column, validate=False, kw_args={'column1': 'fixed acidity','column2': 'volatile acidity','column_name': 'X2'})), 
+        ('lasso', Lasso())
+    ]
+    model = Pipeline(steps)
+    model.set_params(lasso__alpha=alpha)
+
+    model.fit(x_train,y_train)
 
     y_tmp = y_test.copy()
 
@@ -59,7 +73,3 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     mlflow.sklearn.log_model(model, "Ordinary Least Squares")
 
     print(metricas)
-
-
-
-

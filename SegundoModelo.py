@@ -14,7 +14,7 @@ y_train = df_train[['quality']]
 x_test = df_test.drop('quality', inplace=False, axis=1)
 y_test = df_test[['quality']]
 
-alpha = 0.3
+alpha = 0.6
 
 model = Lasso(alpha=alpha).fit(x_train,y_train)
 

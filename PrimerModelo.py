@@ -25,9 +25,6 @@ y_tmp.drop('predicted', inplace=False, axis=1)
 y_tmp['index'] = range(1, len(y_tmp) + 1)
 
 y_tmp.columns = ['Real', 'Predicho', 'Index']
-
-#log de parametros usados
-#mlflow.log_params({'alpha': alpha, 'l1_ratio':l1_ratio})
     
 metricas = {
     'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),
