@@ -1,9 +1,10 @@
-from sklearn.linear_model import Ridge, Lasso
+from sklearn.tree import DecisionTreeRegressor
 import pandas as pd
 
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
+
 from mlflow.models.signature import infer_signature
 
 import shap
@@ -19,9 +20,6 @@ fullpath = os.path.dirname(__file__) + '/../data/'
 
 df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
 df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
-
-df_train['new_column'] = df_train['fixed acidity']/df_train['volatile acidity']
-df_test['new_column'] = df_test['fixed acidity']/df_test['volatile acidity']
 
 x_train = df_train.drop('quality', inplace=False, axis=1)
 y_train = df_train[['quality']]
@@ -39,16 +37,19 @@ except Exception as e:
     exp_id = mlflow.create_experiment(os.environ["MLFLOW_EXPERIMENT_NAME"])
     
 #Parametros
-alpha = 0.05
+#
 #Nombre de la ejecucion
-run_name = 'Regresion Lasso - Tercera prueba'
+run_name = 'Regression Tree - Quinta prueba'
 #Descripcion
 description = """
-Modelo al que se le ha agregado una nueva variable calculada (fixed acidity/volatile acidity)
+# Descripcion
+Se utilizó una regresión con un árbol de decisión con parámetros por defecto y sin nuevas variables
 """
 
 with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description) as run:
-    model = Lasso(alpha=alpha).fit(x_train,y_train)
+
+    model = DecisionTreeRegressor(random_state=0)
+    model.fit(x_train, y_train)
 
     y_tmp = y_test.copy()
 
@@ -57,7 +58,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     y_tmp['index'] = range(1, len(y_tmp) + 1)
 
     y_tmp.columns = ['Real', 'Predicho', 'Index']
-        
+            
     metricas = {
         'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),
         'MSE': mse(y_tmp[['Real']], y_tmp[['Predicho']]),
@@ -70,7 +71,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     # Registro de parametros
     ########################################################
-    mlflow.log_params({'alpha': alpha})
+    #mlflow.log_params({'alpha': alpha})
 
     ########################################################
     # Registro de métricas
@@ -80,7 +81,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     # Registro del modelo
     ########################################################
-    mlflow.sklearn.log_model(model, "Lasso", signature=signature)
+    mlflow.sklearn.log_model(model, "Regression tree", signature=signature)
 
     ########################################################
     # Registro de artefactos: archivo fuente
@@ -97,3 +98,10 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     # Registro de artefactos: importancia de variables
     ########################################################
     mlflow.log_artifact("shap1.png", artifact_path="img")
+
+    ########################################################
+    # Registro de tag para indicar que es una optimizacion
+    ########################################################
+    mlflow.set_tags({
+        "TIPO DE MODELO": "FINAL"
+    })

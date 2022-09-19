@@ -1,4 +1,4 @@
-from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import Ridge, Lasso
 import pandas as pd
 
 from sklearn.metrics import mean_squared_error as mse
@@ -6,6 +6,9 @@ from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
 from mlflow.models.signature import infer_signature
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
+
 
 import shap
 import matplotlib.pyplot as plt
@@ -37,18 +40,28 @@ except Exception as e:
     exp_id = mlflow.create_experiment(os.environ["MLFLOW_EXPERIMENT_NAME"])
     
 #Parametros
-#
+alpha = 0.09
 #Nombre de la ejecucion
-run_name = 'Regression Tree - Quinta prueba'
+run_name = 'Regresion Lasso - Segunda prueba'
 #Descripcion
 description = """
-Regression tree, parametros por defecto, sin variables extra
+# Descubrimiento
+Añadí un nuevo campo llamado "fa_va_ratio" calculado como la división entre el campo "fixed acidity" y "volatile acidity" que mejora notablemente la predicción del modelo
 """
+def new_column(x):
+    x['fa_va_ratio'] = x['fixed acidity']/ x['volatile acidity']
+    return x
+
 
 with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description) as run:
+    steps = [
+        ('new_column', FunctionTransformer(new_column, validate=False, kw_args={})), 
+        ('lasso', Lasso())
+    ]
+    model = Pipeline(steps)
+    model.set_params(lasso__alpha=alpha)
 
-    model = DecisionTreeRegressor(random_state=0)
-    model.fit(x_train, y_train)
+    model.fit(x_train,y_train)
 
     y_tmp = y_test.copy()
 
@@ -57,7 +70,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     y_tmp['index'] = range(1, len(y_tmp) + 1)
 
     y_tmp.columns = ['Real', 'Predicho', 'Index']
-            
+        
     metricas = {
         'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),
         'MSE': mse(y_tmp[['Real']], y_tmp[['Predicho']]),
@@ -70,7 +83,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     # Registro de parametros
     ########################################################
-    #mlflow.log_params({'alpha': alpha})
+    mlflow.log_params({'alpha': alpha})
 
     ########################################################
     # Registro de métricas
@@ -80,7 +93,7 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     # Registro del modelo
     ########################################################
-    mlflow.sklearn.log_model(model, "Regression tree", signature=signature)
+    mlflow.sklearn.log_model(model, "Lasso", signature=signature)
 
     ########################################################
     # Registro de artefactos: archivo fuente
@@ -88,12 +101,21 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     mlflow.log_artifact(__file__, artifact_path="source_code")
 
     #Calculo la importancia de los atributos en el modelo
-    explainer = shap.Explainer(model.predict, x_test)
-    shap_values = explainer(x_test)
-    shap.summary_plot(shap_values, plot_type='violin', show=False)
-    plt.savefig('shap1.png')
+
+    #new_x_test = model.named_steps['new_column'].transform(x_test)
+    #explainer = shap.KernelExplainer(model.named_steps['lasso'].predict, new_x_test, keep_index=True)
+    #shap_values = explainer.shap_values(new_x_test)
+    #shap.summary_plot(shap_values, new_x_test, plot_type='violin', show=False)
+    #plt.savefig('shap1.png')
 
     ########################################################
     # Registro de artefactos: importancia de variables
     ########################################################
     mlflow.log_artifact("shap1.png", artifact_path="img")
+
+    ########################################################
+    # Registro de tag para indicar que es una optimizacion
+    ########################################################
+    mlflow.set_tags({
+        "TIPO DE MODELO": "FINAL"
+    })

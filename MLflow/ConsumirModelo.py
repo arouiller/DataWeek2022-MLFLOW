@@ -23,14 +23,14 @@ import mlflow
 ######################################################
 # Consumir una ejecucion
 ######################################################
-#model_run = 'a14a167aabbe44629bb7487df491ba2a/Lasso'
+#model_run = '6c98b916c6954a2f89fc49777847f6d0/Regression tree'
 #model = mlflow.pyfunc.load_model(model_uri=f"runs:/{model_run}")
 
 ######################################################
 # Consumir una version de un modelo
 ######################################################
 #model_name = "ModeloPuntuacionVinos"
-#model_version = 1
+#model_version = 2
 #model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_version}")
 
 ######################################################
@@ -42,12 +42,8 @@ model_stage = "Production"
 model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_stage}")
 
 y_tmp = y_test.copy()
-
 y_tmp['predicted'] = model.predict(x_test)
-y_tmp.drop('predicted', inplace=False, axis=1)
-y_tmp['index'] = range(1, len(y_tmp) + 1)
-
-y_tmp.columns = ['Real', 'Predicho', 'Index']
+y_tmp.columns = ['Real', 'Predicho']
         
 metricas = {
     'MAE': mae(y_tmp[['Real']], y_tmp[['Predicho']]),

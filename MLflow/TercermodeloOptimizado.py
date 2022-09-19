@@ -4,12 +4,14 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
+
 from mlflow.models.signature import infer_signature
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer
+
 
 import shap
 import matplotlib.pyplot as plt
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer
 
 import os
 
@@ -38,17 +40,18 @@ except Exception as e:
     exp_id = mlflow.create_experiment(os.environ["MLFLOW_EXPERIMENT_NAME"])
     
 #Parametros
-alpha = 0.05
+alpha = 0.00017204962763718543
 #Nombre de la ejecucion
-run_name = 'Regresion Lasso - Cuarta prueba'
+run_name = 'Regresion Lasso - Tercera prueba'
 #Descripcion
 description = """
-Modelo al que se le ha agregado una nueva variable calculada (fixed acidity/volatile acidity)
-Este cálculo está incorporado en el pipeline
-"""
+# Descubrimiento
+Añadí un nuevo campo llamado "fa_va_ratio" calculado como la división entre el campo "fixed acidity" y "volatile acidity" que mejora notablemente la predicción del modelo
 
+El valor del hiperparámetro alpha fue obtenido a través de una optimización bayesiana en el conjunto de experimentos (Regresion Lasso - Optimizacion bayesiana 19Sep2022-085534)
+"""
 def new_column(x):
-    x['new_column'] = x['fixed acidity']/ x['volatile acidity']
+    x['fa_va_ratio'] = x['fixed acidity']/ x['volatile acidity']
     return x
 
 
@@ -98,6 +101,13 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     # Registro de artefactos: archivo fuente
     ########################################################
     mlflow.log_artifact(__file__, artifact_path="source_code")
+
+    ########################################################
+    # Registro de tag para indicar que es una optimizacion
+    ########################################################
+    mlflow.set_tags({
+        "TIPO DE MODELO": "FINAL"
+    })
 
     #Calculo la importancia de los atributos en el modelo
 

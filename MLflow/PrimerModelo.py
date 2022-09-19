@@ -16,9 +16,6 @@ fullpath = os.path.dirname(__file__) + '/../data/'
 df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
 df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
 
-df_train['new_column'] = df_train['fixed acidity']/df_train['volatile acidity']
-df_test['new_column'] = df_test['fixed acidity']/df_test['volatile acidity']
-
 x_train = df_train.drop('quality', inplace=False, axis=1)
 y_train = df_train[['quality']]
 
@@ -73,3 +70,15 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     # Registro del modelo
     ########################################################
     mlflow.sklearn.log_model(model, "Lasso")
+
+    ########################################################
+    # Registro de artefactos
+    ########################################################
+    mlflow.log_artifact(__file__, artifact_path="source_code")
+
+    ########################################################
+    # Registro de tag para indicar que es una optimizacion
+    ########################################################
+    mlflow.set_tags({
+        "TIPO DE MODELO": "FINAL"
+    })

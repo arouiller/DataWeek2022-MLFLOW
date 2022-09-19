@@ -5,6 +5,9 @@ from sklearn.metrics import mean_squared_error as mse
 from sklearn.metrics import mean_absolute_error as mae
 from sklearn.metrics import mean_absolute_percentage_error as mape
 
+import shap
+import matplotlib.pyplot as plt
+
 import os
 
 os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
@@ -16,8 +19,8 @@ fullpath = os.path.dirname(__file__) + '/../data/'
 df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
 df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
 
-df_train['new_column'] = df_train['fixed acidity']/df_train['volatile acidity']
-df_test['new_column'] = df_test['fixed acidity']/df_test['volatile acidity']
+df_train['fa_va_ratio'] = df_train['fixed acidity']/df_train['volatile acidity']
+df_test['fa_va_ratio'] = df_test['fixed acidity']/df_test['volatile acidity']
 
 x_train = df_train.drop('quality', inplace=False, axis=1)
 y_train = df_train[['quality']]
@@ -38,7 +41,8 @@ alpha = 0.09
 run_name = 'Regresion Lasso - Segunda prueba'
 #Descripcion
 description = """
-Modelo al que se le ha agregado una nueva variable calculada (fixed acidity/volatile acidity)
+# Descubrimiento
+Añadí un nuevo campo llamado "fa_va_ratio" calculado como la división entre el campo "fixed acidity" y "volatile acidity" que mejora notablemente la predicción del modelo
 """
 
 with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=description) as run:
@@ -78,7 +82,25 @@ with mlflow.start_run(experiment_id=exp_id, run_name=run_name, description=descr
     ########################################################
     mlflow.sklearn.log_model(model, "Lasso")
 
+    #Calculo la importancia de los atributos en el modelo
+    explainer = shap.Explainer(model.predict, x_test)
+    shap_values = explainer(x_test)
+    shap.summary_plot(shap_values, plot_type='violin', show=False)
+    plt.savefig('shap1.png')
+
+    ########################################################
+    # Registro de artefactos: importancia de variables
+    ########################################################
+    mlflow.log_artifact("shap1.png", artifact_path="img")
+
     ########################################################
     # Registro de artefactos
     ########################################################
     mlflow.log_artifact(__file__, artifact_path="source_code")
+
+    ########################################################
+    # Registro de tag para indicar que es una optimizacion
+    ########################################################
+    mlflow.set_tags({
+        "TIPO DE MODELO": "FINAL"
+    })
