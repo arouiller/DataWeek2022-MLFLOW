@@ -20,7 +20,7 @@ os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
 os.environ["MLFLOW_EXPERIMENT_NAME"] = "PrediccionCalidadVinos"
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
-fullpath = os.path.dirname(__file__) + '/../data/'
+fullpath = os.path.dirname(os.path.abspath(__file__)) + '/../data/'
 
 df_train = pd.read_csv(fullpath + 'winequality-red_train.csv', sep = ',')  
 df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',')  
