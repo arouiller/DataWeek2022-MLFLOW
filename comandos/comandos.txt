@@ -17,4 +17,11 @@ MLFlow
         export MLFLOW_TRACKING_URI='http://127.0.0.1:8990'
         mlflow models serve --model-uri models:/ModeloPuntuacionVinos/Production -p5001 -h0.0.0.0 --no-conda
 
+    mflow UI
+        filtro
+            tags."mlflow.runName" =
+            metrics.MAPE <
+            tags."TIPO DE MODELO" =
+            
+
     
