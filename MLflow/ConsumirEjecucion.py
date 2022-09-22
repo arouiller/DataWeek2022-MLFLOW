@@ -1,17 +1,20 @@
-from sklearn.linear_model import Lasso
+import os
 import pandas as pd
 from sklearn.metrics import mean_squared_error as mse, mean_absolute_error as mae, mean_absolute_percentage_error as mape
+import mlflow
 
-df_train = pd.read_csv('./data/winequality-red_train.csv', sep = ',')  
-x_train = df_train.drop('quality', inplace=False, axis=1)
-y_train = df_train[['quality']].to_numpy()
+os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
+os.environ["MLFLOW_EXPERIMENT_NAME"] = "PrediccionCalidadVinos"
 
-df_test = pd.read_csv('./data/winequality-red_test.csv', sep = ',')  
+fullpath = os.path.dirname(os.path.abspath(__file__)) + '/../data/'
+df_test = pd.read_csv(fullpath + 'winequality-red_test.csv', sep = ',') 
 x_test = df_test.drop('quality', inplace=False, axis=1)
 y_test = df_test[['quality']].to_numpy()
 
-alpha = 1
-model = Lasso(alpha=alpha).fit(x_train,y_train)
+# Consumir una ejecucion
+model_run = '215bc23572ac44af9ca2157ac5eab9bd/Regressor Tree'
+model = mlflow.pyfunc.load_model(model_uri=f"runs:/{model_run}")
+
 predicciones = model.predict(x_test)
     
 metricas = {
@@ -20,10 +23,4 @@ metricas = {
     'RMSE': mse(y_test, predicciones, squared=False),
     'MAPE': mape(y_test, predicciones)
 }
-
 print(metricas)
-
-# 'MAE' : 0.659
-# 'MSE' : 0.631
-# 'RMSE': 0.794
-# 'MAPE': 0.121

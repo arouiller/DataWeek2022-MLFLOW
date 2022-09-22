@@ -1,9 +1,12 @@
-import requests
+import os
 import getopt
 import sys
-import json
+import pandas as pd
+import mlflow
 
-url = "http://10.30.15.37:5001/invocations"
+os.environ["MLFLOW_TRACKING_URI"] = 'http://10.30.15.37:8990'
+os.environ["MLFLOW_EXPERIMENT_NAME"] = "PrediccionCalidadVinos"
+os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
 def predict():
     full_cmd_arguments = sys.argv
@@ -41,24 +44,30 @@ def predict():
         if current_argument in ("-fa", "--alcohol"):
             alcohol = float(current_value)
 
-    inference_request = {
-        "columns": [
-            "fixed acidity",
-            "volatile acidity",
-            "citric acid",
-            "residual sugar",
-            "chlorides",
-            "free sulfur dioxide",
-            "total sulfur dioxide",
-            "density",
-            "pH",
-            "sulphates",
-            "alcohol"
-        ],
-        "data": [[fixed_acidity, volatile_acidity, citric_acid, residual_sugar, chlorides, free_sulfur_dioxide, total_sulfur_dioxide, density, ph, sulphates, alcohol]]
+    dict = {
+        'fixed acidity':fixed_acidity,
+        'volatile acidity':volatile_acidity,
+        'citric acid':citric_acid,
+        'residual sugar':residual_sugar,
+        'chlorides':chlorides,
+        'free sulfur dioxide':free_sulfur_dioxide,
+        'total sulfur dioxide':total_sulfur_dioxide,
+        'density':density,
+        'pH':ph,
+        'sulphates':sulphates,
+        'alcohol':alcohol
     }
 
-    response = requests.post(url, json=inference_request)
-    return(json.loads(response.text))
+    x_test = pd.DataFrame([dict])
+
+
+    ######################################################
+    # Consumir un modelo en produccion
+    ######################################################
+    model_name = "ModeloPuntuacionVinos"
+    model_stage = "Production"
+    model = mlflow.pyfunc.load_model(model_uri=f"models:/{model_name}/{model_stage}")
+
+    return (model.predict(x_test))
 
 print(predict())

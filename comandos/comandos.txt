@@ -3,6 +3,7 @@ MLFlow
         conda env list
         conda activate mlflow_env
         mlflow server -p8990 --serve-artifacts --backend-store-uri sqlite:///mlflow.db -h0.0.0.0
+        #mlflow server -p8990 --serve-artifacts --backend-store-uri sqlite:///mlflow_2.db -h0.0.0.0
 
         crear experimento: PrediccionCalidadVinos
 
@@ -22,6 +23,6 @@ MLFlow
             tags."mlflow.runName" =
             metrics.MAPE <
             tags."TIPO DE MODELO" =
-            
+
 
     

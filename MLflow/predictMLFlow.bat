@@ -1,0 +1,1 @@
+python ConsumirModeloProduccion.py --alcohol=10.75 --chlorides=0.064  --citric_acid=0.02  --density=0.99472  --fixed_acidity=6.7  --free_sulfur_dioxide=29  --ph=3.3  --residual_sugar=1.9  --sulphates=0.56  --total_sulfur_dioxide=38  --volatile_acidity=0.855 
